@@ -1,0 +1,117 @@
+---
+title: "Regression Models - Week 4 Course Project"
+author: "Sanjay Lonkar"
+date: "30 Jun 2018"
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
+  word_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Overview
+
+Analyze data set "mtcars" of collection of cars and answer following two questions:
+
+
+1. Is an automatic or manual transmission better for MPG
+
+
+2. Quantify the MPG difference between automatic and manual transmissions
+
+
+## Result
+
+##### Manual transmission is better for MPG than Autaomatic transmission. Also, manual transmission has 1.8 greater MPG than automatic transmission.
+
+
+### Load data set and perform exploratory data analysis
+
+See Appendix 1 for brief exploratory data analysis.
+
+```{r echo=TRUE}
+data (mtcars)
+```
+
+### Visual Analysis
+
+
+###### Verify impact on MPG by generating a box plot of Transmission Type against MPG. See Appendix 2 for generated box plot. It shows MPG is less for Aumotatic transmission type cars.
+
+
+### Quantified Regression Analysis
+
+
+```{r echo=TRUE}
+aggregate(mpg~am, data = mtcars, mean)
+mtcars$cyl  <- factor(mtcars$cyl)
+mtcars$vs   <- factor(mtcars$vs)
+mtcars$gear <- factor(mtcars$gear)
+mtcars$carb <- factor(mtcars$carb)
+mtcars$am   <- factor(mtcars$am,labels=c("Automatic","Manual"))
+tManual <- mtcars [mtcars$am == "Manual", ]
+tAutomatic <- mtcars [mtcars$am == "Automatic", ]
+t.test(tAutomatic$mpg, tManual$mpg)
+```
+
+It shows that Autmoatic cars have lower 7.25 lower MPG (24.39231 - 17.14737) than Manual cars. Corresponding P-Value is 0.001374 which indicated substantial difference. 
+
+```{r echo=TRUE}
+regressionModel <- lm (mpg ~ am, data = mtcars)
+summary (regressionModel)
+```
+
+Manual car average MPG is 7.2 higher than that of Autmoatic cars which has MPG of 17.1 MPG. Constructing new multivariate regression model as above shows only 36% of the variance (R squared).
+
+```{r echo=TRUE}
+multivariateModel <- lm (mpg ~ am + cyl + disp + hp + wt, data = mtcars)
+anova (regressionModel, multivariateModel)
+```
+```{r echo=TRUE, results='hide'}
+summary(multivariateModel) # See Appendix 3 for result
+```
+We have lesser P-Value of 8.637e-08 indicating better model. Pair plot in Appendix 4 shows correlations between difference data points and MPG.
+
+##### Conclusion, new model gives us 86.64% variance. Taking into account disp, hp, cyl and wt affect on correlation between mpg and am, we can say that difference between Manual and Automatic cars MPG is 1.81 MPG.
+
+
+### Appendix 1
+
+Brief Exploratory Analysis
+
+```{r echo=TRUE}
+head (mtcars)
+str (mtcars) 
+```
+
+
+### Appendix 2
+
+
+Box plot visually showing Manual cars give higher MPG than Automatic cars
+```{r echo=TRUE}
+boxplot(mpg ~ am, data = mtcars, col = (c("red","blue")), ylab = "Miles Per Gallon", 
+        xlab = "Transmission Type")
+```
+
+
+### Appendix 3
+
+
+Summary of multivariate model that gave minimum P-Value
+```{r echo=TRUE}
+summary(multivariateModel)
+```
+
+### Appendix 4
+
+
+Pair plot indicating correlations between difference data points and MPG
+
+```{r echo=TRUE}
+pairs(mpg ~ ., data = mtcars)
+```
